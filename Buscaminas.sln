@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37012.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Buscaminas", "Buscaminas.vcxproj", "{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Debug|x64.ActiveCfg = Debug|x64
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Debug|x64.Build.0 = Debug|x64
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Debug|x86.ActiveCfg = Debug|Win32
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Debug|x86.Build.0 = Debug|Win32
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Release|x64.ActiveCfg = Release|x64
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Release|x64.Build.0 = Release|x64
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Release|x86.ActiveCfg = Release|Win32
+		{B6B1EE6C-DB6F-4260-8D93-72D4B367D5EF}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3FFE863B-9C85-46F3-8BBF-8EA73F4FD833}
+	EndGlobalSection
+EndGlobal
