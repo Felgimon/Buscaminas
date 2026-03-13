@@ -10,11 +10,19 @@
 const int cantCasillas = 100;
 int cantMinas = 25;
 bool minas[cantCasillas] = { };
+bool tablero[cantCasillas] = { };
 int selectedIndex = 0;
 
-void printBehaviour(std::string c, bool selected) {
+void printBehaviour(std::string c, bool selected, bool slot) {
 	std::cout << "|";
-	if (selected) std::cout << "\033[34m" << c;
+	if (selected) {
+		if (slot == true) {
+			std::cout << "\033[34m" << c << "\033[0m";
+		}
+		else {
+			std::cout << "\033[34m" << u8" ■ " << "\033[0m";
+		}
+	}
 	else std::cout << c;
 }
 
@@ -23,16 +31,16 @@ void printMinas() {
 	for (int i = 0; i < cantCasillas; i++) {
 		std::string symbol;
 		if (minas[i] == true) {
-			symbol = u8"💣";
+			symbol = u8"💥 ";
 		}
 		else {
-			symbol = u8"  ";
+			symbol = u8"   ";
 
 		}
 		std::cout << "|" << symbol;
 		if ((i + 1) % 10 == 0 && i != 0) {
 			std::cout << "|" << "\n";
-			std::cout << "-------------------------------" << "\n";
+			std::cout << "-----------------------------------------" << "\n";
 		}
 	}
 	std::cout << "\n";
@@ -42,12 +50,14 @@ void printTablero() {
 	std::cout << "Tablero: " << std::endl;
 	for (int i = 0; i < cantCasillas; i++) {
 		std::string symbol;
-		symbol = u8"  ";
-		printBehaviour(symbol, i == selectedIndex);
-		std::cout << " ";
+		symbol = u8"   ";
+		if (i % 3 == 0) {
+			symbol = u8" 1 ";
+		}
+		printBehaviour(symbol, i == selectedIndex, tablero[i]);
 		if ((i + 1) % 10 == 0 && i != 0) {
 			std::cout << "|" << "\n";
-			std::cout << "-------------------------------" << "\n";
+			std::cout << "-----------------------------------------" << "\n";
 		}
 	}
 }
@@ -66,10 +76,13 @@ void createMinas() {
 }
 
 void Buscaminas() {
+	for (int i = 0; i < cantMinas; i++) {
+		tablero[i] = false;
+	}
 	createMinas();
 	bool listening;
 	while (true) {
-		printMinas();
+		//printMinas();
 		printTablero();
 		listening = true;
 		while (listening) {
