@@ -10,7 +10,8 @@
 
 const int rows = 10;
 const int columns = 10;
-const int cantMinas = 20;
+const int cantMinas = 18;
+bool start = false;
 int tablero[rows][columns] = { };
 int tableroVisual[rows][columns] = { };
 int selectedRow = 0;
@@ -112,9 +113,9 @@ void createMinas() {
 	for (int i = 0; i < cantMinas; i++) {
 		int ranColumn = distrib(gen);
 		int ranRow = distribTwo(gen);
-		while (tablero[ranRow][ranColumn] == MINA || (ranRow == selectedRow && ranColumn == selectedColumn)) { /*Meter un "&&" para cuando quiero chequear la ubicacion de donde se inicio el juego*/
-			ranColumn = distrib(gen);
+		while (tablero[ranRow][ranColumn] == MINA || (ranRow == selectedRow-1 && ranColumn == selectedColumn-1) || (ranRow == selectedRow-1 && ranColumn == selectedColumn) || (ranRow == selectedRow - 1 && ranColumn == selectedColumn+1) || (ranRow == selectedRow && ranColumn == selectedColumn - 1) || (ranRow == selectedRow && ranColumn == selectedColumn) || (ranRow == selectedRow && ranColumn == selectedColumn+1) || (ranRow == selectedRow+1 && ranColumn == selectedColumn -1) || (ranRow == selectedRow + 1 && ranColumn == selectedColumn) || (ranRow == selectedRow + 1 && ranColumn == selectedColumn+1)){ /*No puede colocar una mina donde ya hay una mina, ni colocar una mina donde el jugador selecciono ni sus alrededores para empezar el juego*/
 			ranRow = distribTwo(gen);
+			ranColumn = distribTwo(gen);
 		}
 		tablero[ranRow][ranColumn] = MINA;
 	}
@@ -134,18 +135,28 @@ void selectionManager(std::string command) {
 	else if (command == "DOWN") {
 		if (selectedRow + 1 <= 9) selectedRow++;
 	}
-	std::cout << "\nRow: " << selectedRow;
-	std::cout << "\Column: " << selectedColumn;
 }
 
 void colocarBandera() {
 	tableroVisual[selectedRow][selectedColumn] = BANDERA;
-	std::cout << "Colocaste bandera";
 }
 
 void colocarPregunta() {
 	tableroVisual[selectedRow][selectedColumn] = PREGUNTA;
-	std::cout << "Colocaste un signo de pregunta";
+}
+
+void showStartingIndicators() { /*Hay q hacer una funcion q muestre desde el row y column seleccionado todos los q sean indicador 0 hasta los q tengan un indicador q no sea 0.*/
+	std::cout << "Mostrar indicadores";
+}
+
+void interact() {
+	if (!start) {
+		createMinas();
+		showStartingIndicators();
+		start = true;
+	}
+	else {
+	}
 }
 
 void inputManager() {
@@ -173,7 +184,7 @@ void inputManager() {
 		}
 		else if (GetAsyncKeyState(0x47)) { /*Tecla G = interactuar*/
 			Sleep(100);
-			std::cout << "Interactuaste";
+			interact();
 			listening = false;
 		}
 		else if (GetAsyncKeyState(0x48)) { /*Tecla H = bandera*/
@@ -192,7 +203,6 @@ void inputManager() {
 
 void buscaminas() {
 	initValues();
-	createMinas();
 	initTableroVisual();
 	while (true) {
 		printMinas();
