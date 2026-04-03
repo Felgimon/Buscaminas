@@ -12,7 +12,7 @@ const int rows = 10;
 const int columns = 10;
 const int cantMinas = 20;
 int tablero[rows][columns] = { };
-enum denominations tableroVisual[rows][columns] = { };
+int tableroVisual[rows][columns] = { };
 int selectedRow = 0;
 int selectedColumn = 0;
 enum denominations {
@@ -34,10 +34,10 @@ enum denominations {
 std::string values[13];
 
 void initValues() {
-	values[PREGUNTA] = " ? ";
-	values[BANDERA] = u8"🚩 ";
+	values[PREGUNTA] = " ? "; 
+	values[BANDERA] = u8" ⚐ "; 
 	values[DESCONOCIDO] = u8" ■ ";
-	values[MINA] = u8"💥 ";
+	values[MINA] = u8"\033[31m ※ \033[0m"; /*mina roja*/
 	values[CERO] = " 0 ";
 	values[UNO] = " 1 ";
 	values[DOS] = " 2 ";
@@ -74,7 +74,7 @@ void printTablero() {
 		std::cout << "|";
 		for (int j = 0; j < columns; j++) {
 			if (i == selectedRow && j == selectedColumn) {
-				std::cout << "\033[34m" << values[tableroVisual[i][j]] <<"\033[0m" << "|";
+				std::cout << "\033[34m" << values[tableroVisual[i][j]] << "\033[0m" << "|"; /*Azul siempre cuando esta seleccionado*/
 			}
 			else {
 				std::cout << values[tableroVisual[i][j]] << "|";
@@ -85,65 +85,6 @@ void printTablero() {
 }
 
 void calculateIndicators() { // Calcula los numeros que indican cuantas minas hay alrededor
-//	for (int i = 0; i < cantCasillas; i++) {
-//		if (tablero[i] == MINA) {
-//			continue;
-//		}
-//		int surroundingMinas = 0;
-//		std::vector<int> casillasToCalculate = {};
-//		if (i % 10 == 0) { // Columna de la izquierda del todo <<
-//			if (i != 90) { // Para la esquina izquierda de arriba o todas las demas en la columna
-//				casillasToCalculate.push_back(tablero[i + 10]); // bottomCenter
-//				casillasToCalculate.push_back(tablero[i + 11]); // bottomRight
-//			}
-//			else if (i == 90 || i > 0) { // Para la esquina izquierda de abajo o todas las demas en la columna
-//				casillasToCalculate.push_back(tablero[i - 10]); // topCenter
-//				casillasToCalculate.push_back(tablero[i - 9]); // topRight
-//			}
-//			casillasToCalculate.push_back(tablero[i+1]); // rightCenter
-//		}
-//		else if (i % 10 == 9) { // Columna de la derecha del todo <<
-//			if (i != 99) { // Para la esquina derecha de arriba o todas las demas en la columna
-//				casillasToCalculate.push_back(tablero[i + 10]); // bottomCenter
-//				casillasToCalculate.push_back(tablero[i + 9]); // bottomLeft
-//				// Caso de no en las esquinas
-//			}
-//			else if (i == 99 || i > 9) { // Para la esquina derecha de abajo o todas las demas en la columna
-//				casillasToCalculate.push_back(tablero[i - 10]); // topCenter
-//				casillasToCalculate.push_back(tablero[i - 11]); // topLeft
-//			}
-//			casillasToCalculate.push_back(tablero[i-1]); // leftCenter
-//		}
-//		else if (i > 0 && i < 9) { //Primera fila de arriba sin bordes
-//			casillasToCalculate.push_back(tablero[i-1]); // leftCenter
-//			casillasToCalculate.push_back(tablero[i+1]); // rightCenter
-//			casillasToCalculate.push_back(tablero[i + 10]); // bottomCenter
-//			casillasToCalculate.push_back(tablero[i + 9]); // bottomLeft
-//			casillasToCalculate.push_back(tablero[i + 11]); // bottomRight
-//		} else if (i > 90 && i < 99) { // Ultima fila de abajo sin bordes
-//			casillasToCalculate.push_back(tablero[i-1]); // leftCenter
-//			casillasToCalculate.push_back(tablero[i+1]); // rightCenter
-//			casillasToCalculate.push_back(tablero[i - 10]); // topCenter
-//			casillasToCalculate.push_back(tablero[i - 9]); // topRight
-//			casillasToCalculate.push_back(tablero[i - 11]); // topLeft
-//		}
-//		else { // Todas las casillas de dentro
-//			casillasToCalculate.push_back(tablero[i-1]); // leftCenter
-//			casillasToCalculate.push_back(tablero[i+1]); // rightCenter
-//			casillasToCalculate.push_back(tablero[i - 10]); // topCenter
-//			casillasToCalculate.push_back(tablero[i - 9]); // topRight
-//			casillasToCalculate.push_back(tablero[i - 11]); // topLeft
-//			casillasToCalculate.push_back(tablero[i + 10]); // bottomCenter
-//			casillasToCalculate.push_back(tablero[i + 9]); //bottomLeft
-//			casillasToCalculate.push_back(tablero[i + 11]); //bottomLeft
-//		}
-//		for (int casilla : casillasToCalculate) {
-//			if (casilla == MINA) {
-//				surroundingMinas += std::abs(casilla);
-//			}
-//		}
-//		tablero[i] = surroundingMinas;
-//	}
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
 			if (tablero[i][j] == MINA) continue;
@@ -171,7 +112,7 @@ void createMinas() {
 	for (int i = 0; i < cantMinas; i++) {
 		int ranColumn = distrib(gen);
 		int ranRow = distribTwo(gen);
-		while (tablero[ranRow][ranColumn] == MINA) { /*Meter un "&&" para cuando quiero chequear la ubicacion de donde se inicio el juego*/
+		while (tablero[ranRow][ranColumn] == MINA || (ranRow == selectedRow && ranColumn == selectedColumn)) { /*Meter un "&&" para cuando quiero chequear la ubicacion de donde se inicio el juego*/
 			ranColumn = distrib(gen);
 			ranRow = distribTwo(gen);
 		}
@@ -180,7 +121,7 @@ void createMinas() {
 	calculateIndicators();
 }
 
-void SelectionManager(std::string command) {
+void selectionManager(std::string command) {
 	if (command == "UP") {
 		if (selectedRow - 1 >= 0) selectedRow--;
 	}
@@ -197,41 +138,66 @@ void SelectionManager(std::string command) {
 	std::cout << "\Column: " << selectedColumn;
 }
 
-void InputManager() {
+void colocarBandera() {
+	tableroVisual[selectedRow][selectedColumn] = BANDERA;
+	std::cout << "Colocaste bandera";
+}
+
+void colocarPregunta() {
+	tableroVisual[selectedRow][selectedColumn] = PREGUNTA;
+	std::cout << "Colocaste un signo de pregunta";
+}
+
+void inputManager() {
 	bool listening = true;
 	while (listening) {
 		if (GetAsyncKeyState(VK_UP) || GetAsyncKeyState(0x57)) { // Arriba
 			Sleep(100);
-			SelectionManager("UP");
+			selectionManager("UP");
 			listening = false;
 		}
 		else if (GetAsyncKeyState(VK_RIGHT) || GetAsyncKeyState(0x44)) { // Derecha
 			Sleep(100);
-			SelectionManager("RIGHT");
+			selectionManager("RIGHT");
 			listening = false;
 		}
 		else if (GetAsyncKeyState(VK_LEFT) || GetAsyncKeyState(0x41)) { // Izquierda
 			Sleep(100);
-			SelectionManager("LEFT");
+			selectionManager("LEFT");
 			listening = false;
 		}
 		else if (GetAsyncKeyState(VK_DOWN) || GetAsyncKeyState(0x53)) { // Abajo
 			Sleep(100);
-			SelectionManager("DOWN");
+			selectionManager("DOWN");
+			listening = false;
+		}
+		else if (GetAsyncKeyState(0x47)) { /*Tecla G = interactuar*/
+			Sleep(100);
+			std::cout << "Interactuaste";
+			listening = false;
+		}
+		else if (GetAsyncKeyState(0x48)) { /*Tecla H = bandera*/
+			Sleep(100);
+			colocarBandera();
+			listening = false;
+		}
+		else if (GetAsyncKeyState(0x4A)) { /*Tecla J = pregunta*/
+			Sleep(100);
+			colocarPregunta();
 			listening = false;
 		}
 	}
 }
 
 
-void Buscaminas() {
+void buscaminas() {
 	initValues();
 	createMinas();
 	initTableroVisual();
 	while (true) {
 		printMinas();
 		printTablero();
-		InputManager();
+		inputManager();
 		#if defined(_WIN32) || defined(_WIN64)
 				std::system("cls");
 		#else
@@ -243,7 +209,7 @@ void Buscaminas() {
 int main()
 {
 	SetConsoleOutputCP(CP_UTF8);
-	Buscaminas();
+	buscaminas();
 
 	return 0;
 }
