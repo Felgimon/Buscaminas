@@ -8,10 +8,12 @@
 #include <string>
 #include <map>
 
-const int rows = 10;
-const int columns = 10;
-const int cantMinas = 18;
+const int rows = 16;
+const int columns = 16;
+const int cantMinas = 40;
 bool start = false;
+bool gameEnded = false;
+std::string finalMessage = "";
 int tablero[rows][columns] = { };
 int tableroVisual[rows][columns] = { };
 int selectedRow = 0;
@@ -36,10 +38,10 @@ std::string values[13];
 
 void initValues() {
 	values[PREGUNTA] = " ? "; 
-	values[BANDERA] = u8" ⚐ "; 
+	values[BANDERA] = u8" ⚑ "; 
 	values[DESCONOCIDO] = u8" ■ ";
-	values[MINA] = u8"\033[31m ※ \033[0m"; /*mina roja*/
-	values[CERO] = " 0 ";
+	values[MINA] = u8" ※ "; /*mina roja*/
+	values[CERO] = u8" □ ";
 	values[UNO] = " 1 ";
 	values[DOS] = " 2 ";
 	values[TRES] = " 3 ";
@@ -48,6 +50,24 @@ void initValues() {
 	values[SEIS] = " 6 ";
 	values[SIETE] = " 7 ";
 	values[OCHO] = " 8 ";
+}
+
+std::string colors[13];
+
+void initColors() {
+	colors[PREGUNTA] = "";
+	colors[BANDERA] = "\033[31m";/*roja*/
+	colors[DESCONOCIDO] = "";
+	colors[MINA] = "\033[31m"; /*roja*/
+	colors[CERO] = "";
+	colors[UNO] = "\033[38;5;75m"; /*azul claro*/
+	colors[DOS] = "\033[92m"; /*verde claro*/
+	colors[TRES] = "\033[38;5;208m"; /*naranja*/
+	colors[CUATRO] = "\033[34m"; /*azul*/
+	colors[CINCO] = "\033[38;5;88m"; /*rojo bordó*/
+	colors[SEIS] = "\033[36m";/*turquesa cyan*/
+	colors[SIETE] = "\033[35m"; /*magenta*/
+	colors[OCHO] = "\033[90m"; /*gris*/
 }
 
 void initTableroVisual() {
@@ -60,29 +80,34 @@ void initTableroVisual() {
 
 void printMinas() {
 	std::cout << "Minas: " << std::endl;
+	std::cout << "\n" << "                      -----------------------------------------------------------------" << "\n";
 	for (int i = 0; i < rows; i++) {
-		std::cout << "|";
+		std::cout << "                      |";
+		std::string color;
 		for (int j = 0; j < columns; j++) {
-			std::cout << values[tablero[i][j]] << "|";
+			color = colors[tablero[i][j]];
+			std::cout << color << values[tablero[i][j]] << "\033[0m" << "|";
 		}
-		std::cout << "\n" << "-----------------------------------------" << "\n";
+		std::cout << "\n" << "                      -----------------------------------------------------------------" << "\n";
 	}
 }
 
 void printTablero() {
-	std::cout << "Tablero: " << std::endl;
+	std::cout << "\n\n";
+	std::cout << "\n" << "                      -----------------------------------------------------------------" << "\n";
 	for (int i = 0; i < rows; i++) {
-		std::cout << "|";
+		std::cout << "                      |";
+		std::string color;
 		for (int j = 0; j < columns; j++) {
-			if (i == selectedRow && j == selectedColumn) {
-				std::cout << "\033[34m" << values[tableroVisual[i][j]] << "\033[0m" << "|"; /*Azul siempre cuando esta seleccionado*/
-			}
+			if (i == selectedRow && j == selectedColumn) color = "\033[38;5;213m"; /*Rosa siempre cuando esta seleccionado*/
 			else {
-				std::cout << values[tableroVisual[i][j]] << "|";
+				color = colors[tableroVisual[i][j]];
 			}
+			std::cout << color << values[tableroVisual[i][j]] << "\033[0m" << "|";
 		}
-		std::cout << "\n" << "-----------------------------------------" << "\n";
+		std::cout << "\n" << "                      -----------------------------------------------------------------" << "\n";
 	}
+	std::cout << finalMessage;
 }
 
 void calculateIndicators() { // Calcula los numeros que indican cuantas minas hay alrededor
@@ -127,35 +152,100 @@ void selectionManager(std::string command) {
 		if (selectedRow - 1 >= 0) selectedRow--;
 	}
 	else if (command == "RIGHT") {
-		if (selectedColumn + 1 <= 9) selectedColumn++;
+		if (selectedColumn + 1 < columns) selectedColumn++;
 	} 
 	else if (command == "LEFT") {
 		if (selectedColumn - 1 >= 0) selectedColumn--;
 	}
 	else if (command == "DOWN") {
-		if (selectedRow + 1 <= 9) selectedRow++;
+		if (selectedRow + 1 < rows) selectedRow++;
 	}
 }
 
+//Que si descubris un 0 interactuando en un slot vacio q funcione como en startingIndicators y busque todos los 0 y sus alrededores. Check
+//Que si interactuas con una casilla suelta y q no sea una mina se descubra, y si es una mina q pierdas.
+//Los unos de las esquinas no descubren nada. Check
+//Los numeros q interactues q estan en las esquinas para desbloquear zonas sin minas descubren los de la columna - 1, fuera del limite de columns. Check
+//Cambiar de que cuando interactuas sobre un indicador no corrobore en base a las flags puestas correctamente. Sino que deje poner esas banderas de manera incorrecta y que pierdas si interactuas con el indicador.
+
+
 void colocarBandera() {
-	tableroVisual[selectedRow][selectedColumn] = BANDERA;
+	if (tableroVisual[selectedRow][selectedColumn] == DESCONOCIDO || tableroVisual[selectedRow][selectedColumn] == PREGUNTA) tableroVisual[selectedRow][selectedColumn] = BANDERA;
+	else if (tableroVisual[selectedRow][selectedColumn] == BANDERA) tableroVisual[selectedRow][selectedColumn] = DESCONOCIDO; /*Te permite sacar la bandera*/
 }
 
 void colocarPregunta() {
-	tableroVisual[selectedRow][selectedColumn] = PREGUNTA;
+	if (tableroVisual[selectedRow][selectedColumn] == DESCONOCIDO || tableroVisual[selectedRow][selectedColumn] == BANDERA) tableroVisual[selectedRow][selectedColumn] = PREGUNTA;
+	else if (tableroVisual[selectedRow][selectedColumn] == PREGUNTA) tableroVisual[selectedRow][selectedColumn] = DESCONOCIDO; /*Te permite sacar la bandera*/
 }
 
-void showStartingIndicators() { /*Hay q hacer una funcion q muestre desde el row y column seleccionado todos los q sean indicador 0 hasta los q tengan un indicador q no sea 0.*/
-	std::cout << "Mostrar indicadores";
+void showIndicators(int evaluatedRow, int evaluatedColumn) { /*Cambiar nombre */
+	for (int r = evaluatedRow - 1; r <= evaluatedRow + 1; r++) {
+		for (int c = evaluatedColumn - 1; c <= evaluatedColumn + 1; c++) {
+			if (r < 0 || r >= rows || c < 0 || c >= columns) continue;
+
+			if (tableroVisual[r][c] != DESCONOCIDO) continue; /*No se vuelve a evaluar slots q ya fueron evauados*/
+
+			tableroVisual[r][c] = tablero[r][c];
+
+			if (tablero[r][c] == CERO) {
+				showIndicators(r, c);
+			}
+		}
+	}
+}
+
+void Lose(int evaluatedRow, int evaluatedColumn, bool showOnlySelectedMina) {
+	if (showOnlySelectedMina) {
+		if (tablero[selectedRow][selectedColumn] == MINA && tableroVisual[selectedRow][selectedColumn] != BANDERA) {
+			tableroVisual[selectedRow][selectedColumn] = MINA;
+		}
+	}
+	else {
+		for (int r = evaluatedRow - 1; r <= evaluatedRow + 1; r++) {
+			for (int c = evaluatedColumn - 1; c <= evaluatedColumn + 1; c++) {
+				if (r < 0 || r >= rows || c < 0 || c >= columns) continue;
+				if (tablero[r][c] == MINA && tableroVisual[r][c] != BANDERA) tableroVisual[r][c] = MINA; /*Muestra la mina q no se marco*/
+			}
+		}
+	}
+	finalMessage = "                      \033[31mYOU LOSE\033[0m\n                      Please, press the escape bar to play again";
+	gameEnded = true;
 }
 
 void interact() {
 	if (!start) {
 		createMinas();
-		showStartingIndicators();
+		showIndicators(selectedRow, selectedColumn);
 		start = true;
 	}
 	else {
+		if (tableroVisual[selectedRow][selectedColumn] != BANDERA && tableroVisual[selectedRow][selectedColumn] != PREGUNTA) {
+			if (tablero[selectedRow][selectedColumn] <= OCHO && tablero[selectedRow][selectedColumn] > CERO && tableroVisual[selectedRow][selectedColumn] == DESCONOCIDO) { /*si es un indicador apretado en un slot desconocido*/\
+				tableroVisual[selectedRow][selectedColumn] = tablero[selectedRow][selectedColumn]; 
+				if (tablero[selectedRow][selectedColumn] == MINA && tableroVisual[selectedRow][selectedColumn] != BANDERA) {
+					Lose(selectedRow, selectedColumn, true);
+				}
+			}
+			else if (tablero[selectedRow][selectedColumn] == MINA) {
+				Lose(selectedRow, selectedColumn, true);
+			}
+			else {
+				int validFlags = 0;
+				for (int r = selectedRow - 1; r <= selectedRow + 1; r++) {
+					for (int c = selectedColumn - 1; c <= selectedColumn + 1; c++) {
+						if (r < 0 || r >= rows || c < 0 || c >= columns) continue; /*Para que no se pase del limite*/
+						if (tablero[r][c] == MINA && tableroVisual[r][c] == BANDERA) validFlags++; /*Tiene que ser una bandera puesta si o si arriba de una mina*/
+					}
+				}
+				if (validFlags == tableroVisual[selectedRow][selectedColumn] || tablero[selectedRow][selectedColumn] == CERO) { /*En el caso de que esten bien puestas las banderas*/
+					showIndicators(selectedRow, selectedColumn);
+				}
+				else {
+					Lose(selectedRow, selectedColumn, false);
+				}
+			}
+		}
 	}
 }
 
@@ -163,49 +253,58 @@ void inputManager() {
 	bool listening = true;
 	while (listening) {
 		if (GetAsyncKeyState(VK_UP) || GetAsyncKeyState(0x57)) { // Arriba
-			Sleep(100);
+			Sleep(150);
 			selectionManager("UP");
 			listening = false;
 		}
 		else if (GetAsyncKeyState(VK_RIGHT) || GetAsyncKeyState(0x44)) { // Derecha
-			Sleep(100);
+			Sleep(150);
 			selectionManager("RIGHT");
 			listening = false;
 		}
 		else if (GetAsyncKeyState(VK_LEFT) || GetAsyncKeyState(0x41)) { // Izquierda
-			Sleep(100);
+			Sleep(150);
 			selectionManager("LEFT");
 			listening = false;
 		}
 		else if (GetAsyncKeyState(VK_DOWN) || GetAsyncKeyState(0x53)) { // Abajo
-			Sleep(100);
+			Sleep(150);
 			selectionManager("DOWN");
 			listening = false;
 		}
-		else if (GetAsyncKeyState(0x47)) { /*Tecla G = interactuar*/
-			Sleep(100);
-			interact();
-			listening = false;
+		if (gameEnded) { /*Si el juego termino solo se puede hacer esta accion y las de arriba*/
+			if (GetAsyncKeyState(0x20)) { /*Barrra espaciadora = cuando perdes*/
+				Sleep(150);
+				std::cout << "\n                      We are working on it"; //Aca deberia ir buscaminas() pero el identifier me tira error, porque buscaminas() deberia estar arriba de esta funcion, pero no es posible porque entonces no podria llamar a inputManager()
+				listening = false;
+			}
 		}
-		else if (GetAsyncKeyState(0x48)) { /*Tecla H = bandera*/
-			Sleep(100);
-			colocarBandera();
-			listening = false;
-		}
-		else if (GetAsyncKeyState(0x4A)) { /*Tecla J = pregunta*/
-			Sleep(100);
-			colocarPregunta();
-			listening = false;
-		}
+		else {
+			if (GetAsyncKeyState(0x47)) { /*Tecla G = interactuar*/
+				Sleep(150);
+				interact();
+				listening = false;
+			}
+			else if (GetAsyncKeyState(0x48)) { /*Tecla H = bandera*/
+				Sleep(150);
+				colocarBandera();
+				listening = false;
+			}
+			else if (GetAsyncKeyState(0x4A)) { /*Tecla J = pregunta*/
+				Sleep(150);
+				colocarPregunta();
+				listening = false;
+			}
+		} 
 	}
 }
 
-
 void buscaminas() {
 	initValues();
+	initColors();
 	initTableroVisual();
 	while (true) {
-		printMinas();
+		//printMinas();
 		printTablero();
 		inputManager();
 		#if defined(_WIN32) || defined(_WIN64)
