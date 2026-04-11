@@ -249,6 +249,18 @@ void interact() {
 	}
 }
 
+void newGame() {
+	for (int r = 0; r < rows; r++) {
+		for (int c = 0; c < columns; c++) {
+			tablero[r][c] = CERO;
+			tableroVisual[r][c] = DESCONOCIDO;
+		}
+	}
+	start = false;
+	gameEnded = false;
+	finalMessage = "";
+}
+
 void inputManager() {
 	bool listening = true;
 	while (listening) {
@@ -275,7 +287,7 @@ void inputManager() {
 		if (gameEnded) { /*Si el juego termino solo se puede hacer esta accion y las de arriba*/
 			if (GetAsyncKeyState(0x20)) { /*Barrra espaciadora = cuando perdes*/
 				Sleep(150);
-				std::cout << "\n                      We are working on it"; //Aca deberia ir buscaminas() pero el identifier me tira error, porque buscaminas() deberia estar arriba de esta funcion, pero no es posible porque entonces no podria llamar a inputManager()
+				newGame();
 				listening = false;
 			}
 		}
